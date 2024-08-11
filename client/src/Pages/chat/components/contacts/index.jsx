@@ -44,10 +44,12 @@ const {setDirectMessagesContact, directMessagesContact, groups, setGroups }=useA
           </div>
         </div>
         <div className="my-5">
+          {/*}
           <div className="flex items-center justify-between pr-10">
             <Title text="Groups"/>
             <Group/>
           </div>
+            */}
           <div className="max-h-[38vh] overflow-auto scrollbar-hidden">
               <ContactList contacts={groups} isGroup={true}/>
           </div>

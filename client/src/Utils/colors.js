@@ -11,9 +11,9 @@ export const borderColors = [
     "border-[#064433]",
     "border-[#064433]",
   ];
-export const getColor = (color)=>{
-    if(!color >=0 && color<color.length){
-        return colors[color];
+  export const getColor = (colorIndex) => {
+    if (typeof colorIndex === 'number' && colorIndex >= 0 && colorIndex < colors.length) {
+      return colors[colorIndex];
     }
     return colors[0];
-};
+  };

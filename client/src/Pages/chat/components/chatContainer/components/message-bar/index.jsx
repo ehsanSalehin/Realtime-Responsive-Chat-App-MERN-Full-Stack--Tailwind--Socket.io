@@ -1,4 +1,3 @@
-// MessageBar.jsx
 import { useEffect, useRef, useState } from "react";
 import { RiAttachmentLine, RiEmojiStickerLine } from "react-icons/ri";
 import { GrSend } from "react-icons/gr";
@@ -10,7 +9,7 @@ import { UPLOAD_FILE_ROUTE } from "@/Utils/constants";
 
 const MessageBar = () => {
   const fileInputRef = useRef();
-  const { selectedChatType, selectedChatData, userInfo, addMessage, setIsUploading, setFileUploadProgress  } = useAppStore();
+  const { selectedChatType, selectedChatData, userInfo, addMessage, setIsUploading, setFileUploadProgress } = useAppStore();
   const socket = useSocket();
   const [message, setMessage] = useState("");
   const emojiRef = useRef();
@@ -36,8 +35,19 @@ const MessageBar = () => {
         fileUrl: undefined,
       };
       socket.emit("sendMessage", messageData);
-      addMessage(messageData); 
-      setMessage(""); 
+      addMessage(messageData);
+      setMessage("");
+    } else if (selectedChatType === "group") {
+      const messageData = {
+        sender: userInfo?.id,
+        content: message,
+        messageType: "text",
+        fileUrl: undefined,
+        groupId: selectedChatData?._id,
+      };
+      socket.emit("send-group-message", messageData);
+      addMessage(messageData);
+      setMessage("");
     }
   };
 
@@ -55,11 +65,12 @@ const MessageBar = () => {
         formData.append("file", file);
         formData.append("recipentId", selectedChatData._id);
         setIsUploading(true);
-        const res = await apiClient.post(UPLOAD_FILE_ROUTE, formData, { withCredentials: true,
-          onUploadProgress:data=>{
-            setFileUploadProgress(Math.round((100*data.loaded)/data.total));
+        const res = await apiClient.post(UPLOAD_FILE_ROUTE, formData, {
+          withCredentials: true,
+          onUploadProgress: (data) => {
+            setFileUploadProgress(Math.round((100 * data.loaded) / data.total));
           },
-         });
+        });
         if (res.status === 200 && res.data) {
           setIsUploading(false);
           if (selectedChatType === "contact") {
@@ -71,8 +82,19 @@ const MessageBar = () => {
               fileUrl: res.data.filePath,
             };
             socket.emit("sendMessage", messageData);
-            addMessage(messageData); 
-            setMessage(""); 
+            addMessage(messageData);
+            setMessage("");
+          } else if (selectedChatType === "group") {
+            const messageData = {
+              sender: userInfo?.id,
+              content: undefined,
+              messageType: "file",
+              fileUrl: res.data.filePath,
+              groupId: selectedChatData?._id,
+            };
+            socket.emit("send-group-message", messageData);
+            addMessage(messageData);
+            setMessage("");
           }
         }
       }
@@ -101,9 +123,11 @@ const MessageBar = () => {
           <button onClick={() => setEmojiPicker(!emojiPicker)}>
             <RiEmojiStickerLine className="text-2xl" />
           </button>
-          <div className="absolute bottom-16 right-0" ref={emojiRef}>
-            <EmojiPicker theme="light" open={emojiPicker} onEmojiClick={handleEmoji} />
-          </div>
+          {emojiPicker && (
+            <div className="absolute bottom-16 right-0" ref={emojiRef}>
+              <EmojiPicker theme="light" onEmojiClick={handleEmoji} />
+            </div>
+          )}
         </div>
       </div>
       <button

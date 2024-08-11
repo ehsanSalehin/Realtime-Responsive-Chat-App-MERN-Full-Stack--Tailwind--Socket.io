@@ -1,4 +1,3 @@
-// createChatSlice.js
 export const createChatSlice = (set, get) => ({
   selectedChatType: undefined,
   selectedChatData: undefined,
@@ -36,4 +35,36 @@ export const createChatSlice = (set, get) => ({
       selectedChatMessages: [...selectedChatMessages, message],
     });
   },
+  //sorting group message 
+  addGroupInGroupList:(message)=>{
+    const groups =get().groups;
+    const data = groups.find(group=>group._id === message.groupId);
+    const index = groups.findIndex(
+      (group) => group._id === message.groupId
+    );
+    if(index !== -1 && index !==undefined){
+      groups.splice(index, 1);
+      groups.unshift(data);
+    }
+  },
+  //sorting direct message
+  addContextInDirectMessageContext:(message)=>{
+    const userId = get().userInfo.id;
+    const fromId = 
+    message.sender._id ===userId
+      ? message.recipent._id
+      : message.sender._id;
+    const fromData =
+      message.sender._id === userId ? message.recipent : message.sender;
+    const directMessagesContact = get().directMessagesContact;
+    const data = directMessagesContact.find((contact)=>contact._id === fromId);
+    const index = directMessagesContact.findIndex((contact)=> contact._id === fromId);
+    if(index !== -1 && index !== undefined){
+      directMessagesContact.splice(index, 1);
+      directMessagesContact.unshift(data);
+    }else{
+      directMessagesContact.unshift(fromData);
+    }
+    set({directMessagesContact: directMessagesContact});
+  }
 });

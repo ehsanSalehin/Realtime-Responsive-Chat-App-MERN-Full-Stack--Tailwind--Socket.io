@@ -28,23 +28,27 @@ const Group = () => {
   const createGroup = async () => {
     try {
       if (groupName.length > 0 && selectedContacts.length > 0) {
-        // Log the data being sent
         console.log("Creating group with:", { name: groupName, members: selectedContacts });
-  
+
         const res = await apiClient.post(
           CREATE_GROUP_ROUTE,
           {
             name: groupName,
-            members: selectedContacts, // Ensure these are valid IDs
+            members: selectedContacts, 
           },
           { withCredentials: true }
         );
-  
+
         if (res.status === 201) {
+          const newGroup = res.data.group;
           setGroupName("");
           setSelectedContacts([]);
           setNewGroup(false);
-          addGroup(res.data.group);
+          addGroup(newGroup);
+
+          // Set the newly created group as the selected chat
+          setSelectedChatType("group");
+          setSelectedChatData(newGroup);
         }
       }
     } catch (err) {
@@ -87,7 +91,6 @@ const Group = () => {
         <div className="flex flex-col h-full">
           <h2 className="text-lg mb-4 font-bold">Create a New Group</h2>
           
-          {/* Input for Group Name */}
           <input
             placeholder="Group Name"
             className="rounded-lg p-3 bg-[#ffffff] border-none mb-4 font-bold text-purple-600"
@@ -95,7 +98,6 @@ const Group = () => {
             value={groupName}
           />
 
-          {/* Input for Searching Contacts */}
           <input
             placeholder="Search Contacts"
             className="rounded-lg p-3 bg-[#ffffff] border-none mb-4 font-bold text-purple-600"
@@ -106,10 +108,9 @@ const Group = () => {
             value={searchTerm}
           />
 
-          {/* List of Search Results */}
           <div className="mb-4 max-h-40 overflow-y-auto bg-[#e3a76b] flex flex-col rounded-xl">
             {searchResults.map((contact) => (
-              <label key={contact._id} className="flex  mb-2 gap-3 items-center cursor-pointer ">
+              <label key={contact._id} className="flex mb-2 gap-3 items-center cursor-pointer ">
                 <input
                   type="checkbox"
                   checked={selectedContacts.includes(contact._id)}
